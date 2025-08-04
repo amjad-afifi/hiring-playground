@@ -16,6 +16,7 @@ public class Product {
     private BigDecimal price;
 
     private String imageUrl;
+    private int quantity;
 
     public Product() {
         super();
@@ -92,6 +93,14 @@ public class Product {
 
     public void setimageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int stock) {
+        this.quantity = stock;
     }
 
     @Override
