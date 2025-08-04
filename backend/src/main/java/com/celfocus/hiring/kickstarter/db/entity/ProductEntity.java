@@ -54,5 +54,8 @@ public class ProductEntity extends Product implements Serializable {
     public void setimageUrl(String imageUrl) {
         super.setimageUrl(imageUrl);
     }
+    public void setQuantity(int quantity) { super.setQuantity(quantity);}
+
+    public int getQuantity() { return super.getQuantity(); }
 }
 

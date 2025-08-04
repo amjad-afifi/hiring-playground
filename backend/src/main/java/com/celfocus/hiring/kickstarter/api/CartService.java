@@ -9,6 +9,10 @@ import com.celfocus.hiring.kickstarter.db.repo.CartRepository;
 import com.celfocus.hiring.kickstarter.db.repo.ProductRepository;
 import com.celfocus.hiring.kickstarter.domain.Cart;
 import com.celfocus.hiring.kickstarter.domain.CartItem;
+import com.celfocus.hiring.kickstarter.domain.Product;
+import com.celfocus.hiring.kickstarter.exception.CartNotFoundException;
+import com.celfocus.hiring.kickstarter.exception.InsufficientStockException;
+import com.celfocus.hiring.kickstarter.exception.ItemNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,15 +38,26 @@ public class CartService {
             return cartRepository.save(newCart);
         });
 
+        var product = productRepository.findBySku(itemInput.itemId())
+                .orElseThrow(() -> new ItemNotFoundException("Cart Item not found for user: " + username));
+
         cartItemRepository.findById(new CartItemPK(itemInput.itemId(), cart.getId()))
-                .ifPresentOrElse((item) -> updateItemQuantity(item, 1), () -> {
-                    addNewItemToCart(itemInput, cart);
+                .ifPresentOrElse(
+                        (existingItem) -> {
+                        int newQuantity = existingItem.getQuantity() + 1;
+                        if(newQuantity > product.getQuantity()) {
+                            throw new InsufficientStockException("Not enough stock to add more of this item");
+                        }
+                            updateItemQuantity(existingItem, 1);
+                        }, () -> {
+                            if(product.getQuantity() < 1) {
+                                throw new InsufficientStockException("Not enough stock to add this item");
+                            }
+                    addNewItemToCart(itemInput, cart, product);
                 });
     }
 
-    private void addNewItemToCart(CartItemInput itemInput, CartEntity cart) {
-        var product = productRepository.findBySku(itemInput.itemId())
-                .orElseThrow(() -> new RuntimeException("Cart Item not found"));
+    private void addNewItemToCart(CartItemInput itemInput, CartEntity cart, Product product) {
         var cartItem = new CartItemEntity();
         cartItem.setQuantity(1);
         cartItem.setItemId(itemInput.itemId());
@@ -62,18 +77,28 @@ public class CartService {
     }
 
     public void clearCart(String username) {
-        cartRepository.deleteByUserId(username);
+        var cart = cartRepository.findByUserId(username)
+                .orElseThrow(() -> new CartNotFoundException("Cart not found for user: " + username));
+
+        cartRepository.delete(cart);
     }
 
     public Cart<? extends CartItem> getCart(String username) {
         return cartRepository.findByUserId(username)
                 .map(this::mapToCart)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+                .orElseThrow(() -> new CartNotFoundException("Cart not found for user: " + username));
     }
-
     public void removeItemFromCart(String username, String itemId) {
-        cartRepository.findByUserId(username)
-                .ifPresent(cart -> cartItemRepository.deleteById(new CartItemPK(itemId, cart.getId())));
+        var cart = cartRepository.findByUserId(username)
+                .orElseThrow(() -> new CartNotFoundException("Cart not found for user: " + username));
+
+        var cartItemId = new CartItemPK(itemId, cart.getId());
+
+        if (!cartItemRepository.existsById(cartItemId)) {
+            throw new ItemNotFoundException("Item not found in cart");
+        }
+
+        cartItemRepository.deleteById(cartItemId);
     }
 
     private Cart<? extends CartItem> mapToCart(CartEntity cartEntity) {
