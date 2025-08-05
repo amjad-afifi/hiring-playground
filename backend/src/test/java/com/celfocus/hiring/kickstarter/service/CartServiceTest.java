@@ -13,7 +13,6 @@ import com.celfocus.hiring.kickstarter.db.entity.ProductEntity;
 import com.celfocus.hiring.kickstarter.db.repo.CartItemRepository;
 import com.celfocus.hiring.kickstarter.db.repo.CartRepository;
 import com.celfocus.hiring.kickstarter.db.repo.ProductRepository;
-import com.celfocus.hiring.kickstarter.domain.Product;
 import com.celfocus.hiring.kickstarter.exception.CartNotFoundException;
 import com.celfocus.hiring.kickstarter.exception.InsufficientStockException;
 import com.celfocus.hiring.kickstarter.exception.ItemNotFoundException;
@@ -30,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class CartServiceTest {
-
     @Mock
     private CartRepository cartRepository;
 

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,15 +37,17 @@ public class CartAPIController implements CartAPI {
     }
 
     @Override
-    public ResponseEntity<Void> addItemToCart(String username, CartItemInput itemInput) {
-        logger.info("Adding item [{}] in cart for user [{}]", itemInput.itemId() ,username);
+    public ResponseEntity<Void> addItemToCart(CartItemInput itemInput) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        logger.info("Adding item [{}] in cart for user [{}]", itemInput.itemId(), username);
         cartService.addItemToCart(username, itemInput);
         logger.info("Successfully added item [{}] in cart for user [{}]", itemInput.itemId() ,username);
         return ResponseEntity.status(201).build();
     }
 
     @Override
-    public ResponseEntity<Void> clearCart(String username) {
+    public ResponseEntity<Void> clearCart() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         logger.info("Request to clear cart for user [{}] ",username);
         cartService.clearCart(username);
         logger.info("Cart cleared successfully for [{}]", username);
@@ -52,7 +55,8 @@ public class CartAPIController implements CartAPI {
     }
 
     @Override
-    public ResponseEntity<CartResponse> getCart(String username) {
+    public ResponseEntity<CartResponse> getCart() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         logger.info("GET cart for user : [{}]", username);
         var cart = cartService.getCart(username);
         logger.info("Cart retrieved successfully for user: [{}]", username);
@@ -60,7 +64,8 @@ public class CartAPIController implements CartAPI {
     }
 
     @Override
-    public ResponseEntity<Void> removeItemFromCart(String username, String itemId) {
+    public ResponseEntity<Void> removeItemFromCart(String itemId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         logger.info("Removing item [{}] from cart for user :[{}]", itemId, username);
         cartService.removeItemFromCart(username, itemId);
         logger.info("Item [{}] removed successfully from cart for user :[{}]", itemId, username);
