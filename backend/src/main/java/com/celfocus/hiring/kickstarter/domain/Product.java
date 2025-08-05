@@ -30,6 +30,15 @@ public class Product {
         this.imageUrl = imageUrl;
     }
 
+    public Product(String name, String sku, String description, BigDecimal price, String imageUrl, int quantity) {
+        this.name = name;
+        this.sku = sku;
+        this.description = description;
+        this.price = price;
+        this.imageUrl = imageUrl;
+        this.quantity = quantity;
+    }
+
     public Product name(String name) {
         this.name = name;
         return this;
