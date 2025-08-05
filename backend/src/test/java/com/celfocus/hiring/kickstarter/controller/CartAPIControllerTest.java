@@ -1,9 +1,5 @@
 package com.celfocus.hiring.kickstarter.controller;
 
-/**
- * @author amjad.afifi
- */
-
 import com.celfocus.hiring.kickstarter.api.CartAPIController;
 import com.celfocus.hiring.kickstarter.api.CartService;
 import com.celfocus.hiring.kickstarter.api.ProductService;
@@ -19,6 +15,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -41,6 +40,15 @@ class CartAPIControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        mockSecurityContextWithUser("john");
+    }
+
+    private void mockSecurityContextWithUser(String username) {
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getName()).thenReturn(username);
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
     }
 
     @Test
@@ -51,14 +59,14 @@ class CartAPIControllerTest {
     @Test
     void testAddItemToCart() {
         CartItemInput input = new CartItemInput("sku123");
-        ResponseEntity<Void> response = cartAPIController.addItemToCart("john", input);
+        ResponseEntity<Void> response = cartAPIController.addItemToCart(input);
         assertEquals(201, response.getStatusCodeValue());
         verify(cartService).addItemToCart("john", input);
     }
 
     @Test
     void testClearCart() {
-        ResponseEntity<Void> response = cartAPIController.clearCart("john");
+        ResponseEntity<Void> response = cartAPIController.clearCart();
         assertEquals(204, response.getStatusCodeValue());
         verify(cartService).clearCart("john");
     }
@@ -74,6 +82,7 @@ class CartAPIControllerTest {
                 return 2;
             }
         };
+
         Cart<CartItem> cart = new Cart<>();
         cart.setUserId("john");
         cart.setItems(List.of(item));
@@ -86,12 +95,13 @@ class CartAPIControllerTest {
                 .when(productService)
                 .getProduct("sku123");
 
-        ResponseEntity<CartResponse> response = cartAPIController.getCart("john");
+        ResponseEntity<CartResponse> response = cartAPIController.getCart();
 
         assertEquals(200, response.getStatusCodeValue());
         CartResponse cartResponse = response.getBody();
         assertNotNull(cartResponse);
         assertEquals(1, cartResponse.items().size());
+
         CartItemResponse itemResponse = cartResponse.items().get(0);
         assertEquals("sku123", itemResponse.itemId());
         assertEquals(2, itemResponse.quantity());
@@ -101,7 +111,7 @@ class CartAPIControllerTest {
 
     @Test
     void testRemoveItemFromCart() {
-        ResponseEntity<Void> response = cartAPIController.removeItemFromCart("john", "sku123");
+        ResponseEntity<Void> response = cartAPIController.removeItemFromCart("sku123");
         assertEquals(204, response.getStatusCodeValue());
         verify(cartService).removeItemFromCart("john", "sku123");
     }

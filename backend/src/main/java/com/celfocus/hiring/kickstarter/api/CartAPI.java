@@ -1,5 +1,6 @@
 package com.celfocus.hiring.kickstarter.api;
 
+import com.celfocus.hiring.kickstarter.api.dto.AuthRequest;
 import com.celfocus.hiring.kickstarter.api.dto.CartItemInput;
 import com.celfocus.hiring.kickstarter.api.dto.CartResponse;
 import jakarta.validation.Valid;
@@ -11,14 +12,14 @@ import org.springframework.web.bind.annotation.*;
 @Validated
 public interface CartAPI {
     @PostMapping("/items")
-    ResponseEntity<Void> addItemToCart(@RequestHeader("username") String username, @Valid @RequestBody CartItemInput itemInput);
+    ResponseEntity<Void> addItemToCart(@Valid @RequestBody CartItemInput itemInput);
 
     @DeleteMapping
-    ResponseEntity<Void> clearCart(@RequestHeader("username") String username);
+    ResponseEntity<Void> clearCart();
 
     @GetMapping
-    ResponseEntity<CartResponse> getCart(@RequestHeader("username") String username);
+    ResponseEntity<CartResponse> getCart();
 
     @DeleteMapping("/items/{itemId}")
-    ResponseEntity<Void> removeItemFromCart(@RequestHeader("username") String username, @PathVariable("itemId") String itemId);
+    ResponseEntity<Void> removeItemFromCart(@PathVariable("itemId") String itemId);
 }
