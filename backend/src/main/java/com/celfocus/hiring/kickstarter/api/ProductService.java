@@ -5,6 +5,7 @@ import com.celfocus.hiring.kickstarter.domain.Product;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public class ProductService {
         logger.debug("Getting all products");
         return productRepository.findAll();
     }
-
+    @Cacheable(value = "products", key = "#sku")
     public Optional<? extends Product> getProduct(String sku) {
         logger.debug("Getting product [{}]", sku);
         return productRepository.findBySku(sku);

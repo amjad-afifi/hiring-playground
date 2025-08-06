@@ -17,6 +17,8 @@ import com.celfocus.hiring.kickstarter.exception.ProductDoesNotExistException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +38,7 @@ public class CartService {
         this.productRepository = productRepository;
     }
 
+    @CacheEvict(value = "cart", key = "#username")
     public void addItemToCart(String username, CartItemInput itemInput) {
         logger.trace("In method addItemToCart");
         var cart = cartRepository.findByUserId(username).orElseGet(() -> {
@@ -100,7 +103,7 @@ public class CartService {
         cartItemRepository.save(item);
         logger.debug("Item [{}] quantity set to [{}] successfully", item.getItemId(), item.getQuantity());
     }
-
+    @CacheEvict(value = "cart", key = "#username")
     public void clearCart(String username) {
         logger.debug("Clearing cart for user: [{}]", username);
         var cart = cartRepository.findByUserId(username)
@@ -114,6 +117,7 @@ public class CartService {
         logger.info("Cart cleared successfully for user: [{}]", username);
     }
 
+    @Cacheable(value = "cart", key = "#username")
     public Cart<? extends CartItem> getCart(String username) {
         logger.debug("Getting cart for user: [{}]", username);
         return cartRepository.findByUserId(username)
@@ -124,6 +128,7 @@ public class CartService {
                 });
 
     }
+    @CacheEvict(value = "cart", key = "#username")
     public void removeItemFromCart(String username, String itemId) {
         logger.debug("Remove item [{}] from cart for user: [{}]", itemId, username);
         var cart = cartRepository.findByUserId(username)
