@@ -1,10 +1,12 @@
 package com.celfocus.hiring.kickstarter.domain;
 
+import java.util.Date;
 import java.util.List;
 
 public class Cart<T extends CartItem> {
     private String userId;
     private List<T> items;
+    private Date lastModified;
 
 
     public List<T> getItems() {
@@ -21,5 +23,13 @@ public class Cart<T extends CartItem> {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public Date getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Date lastModified) {
+        this.lastModified = lastModified;
     }
 }
