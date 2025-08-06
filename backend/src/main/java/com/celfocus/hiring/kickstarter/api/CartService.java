@@ -23,6 +23,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
+
 @Service
 @Transactional
 public class CartService {
@@ -45,6 +47,7 @@ public class CartService {
             logger.debug("No cart found for user: [{}], creating new cart", username);
             var newCart = new CartEntity();
             newCart.setUserId(username);
+            newCart.setLastModified(new Date());
             return cartRepository.save(newCart);
         });
 
@@ -78,6 +81,9 @@ public class CartService {
                             logger.info("Item not in cart. Adding new item.");
                             addNewItemToCart(itemInput, cart, product);
                 });
+        cart.setLastModified(new Date());
+        cartRepository.save(cart);
+        logger.info(cart.getLastModified().toString());
         logger.debug("Finished addItemToCart for user: [{}]", username);
     }
 
@@ -114,6 +120,7 @@ public class CartService {
 
         logger.debug("Deleting cart with ID [{}] for user [{}]", cart.getId(), username);
         cartRepository.delete(cart);
+        cart.setLastModified(new Date());
         logger.info("Cart cleared successfully for user: [{}]", username);
     }
 
@@ -126,8 +133,8 @@ public class CartService {
                     logger.error("Could not get cart for [{}]. Cart not found" , username);
                     return new CartNotFoundException("Cart not found for user: " + username);
                 });
-
     }
+
     @CacheEvict(value = "cart", key = "#username")
     public void removeItemFromCart(String username, String itemId) {
         logger.debug("Remove item [{}] from cart for user: [{}]", itemId, username);
@@ -147,6 +154,8 @@ public class CartService {
         }
 
         cartItemRepository.deleteById(cartItemId);
+        cart.setLastModified(new Date());
+        cartRepository.save(cart);
         logger.info("Item [{}] removed from cart for user [{}]", itemId, username);
     }
 
