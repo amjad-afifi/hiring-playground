@@ -83,7 +83,6 @@ public class CartService {
                 });
         cart.setLastModified(new Date());
         cartRepository.save(cart);
-        logger.info(cart.getLastModified().toString());
         logger.debug("Finished addItemToCart for user: [{}]", username);
     }
 
@@ -165,10 +164,5 @@ public class CartService {
         cart.setUserId(cartEntity.getUserId());
         cart.setItems(cartEntity.getItems());
         return cart;
-    }
-
-
-    public String getLoggedInUsername() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
     }
 }
